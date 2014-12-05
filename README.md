@@ -1,8 +1,17 @@
+Oculus Wine Wrapper
+===================
+
+This is a wrapper which allows some Windows Oculus games to run on Linux under
+Wine, using the native Linux runtime.
+
+* Main page: https://www.jspenguin.org/software/ovrsdk/
+* Discussion: https://www.reddit.com/r/oculus/comments/2k8fuq/run_windows_rift_games_on_linux_using_wine/
+
 To run Oculus games under Wine, first make sure the service is NOT running (the
 wrapper starts the service itself with an injected library), then run:
 
-cd /PATH/TO/GAME
-~/Downloads/oculus_wine_wrapper/oculus_wine_wrapper.sh ~/Downloads/ovr_sdk_linux_0.4.3 game.exe
+    cd /PATH/TO/GAME
+    ~/Downloads/oculus_wine_wrapper/oculus_wine_wrapper.sh ~/Downloads/ovr_sdk_linux_0.4.3 game.exe
 
 This assumes you have unpacked both the wrapper and the SDK in ~/Downloads. If
 you have unpacked then somewhere else, just replace the paths.
