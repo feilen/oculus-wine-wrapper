@@ -6,6 +6,7 @@ Wine, using the native Linux runtime.
 
 * Main page: https://www.jspenguin.org/software/ovrsdk/
 * Discussion: https://www.reddit.com/r/oculus/comments/2k8fuq/run_windows_rift_games_on_linux_using_wine/
+* Development: https://github.com/jspenguin/oculus-wine-wrapper
 
 To run Oculus games under Wine, first make sure the service is NOT running (the
 wrapper starts the service itself with an injected library), then run:
