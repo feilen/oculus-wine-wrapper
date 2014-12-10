@@ -24,18 +24,25 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 IFS=
-mydir=`cd \`dirname $0\`; pwd`
 
 [ -z "$WINE" ] && WINE=wine
 
-if [ $# -lt 2 ]; then
-    echo "Usage: $0 [path to oculusd] [path to game] [arguments]"
-    exit 1
+while [[ ${1:0:1} = "-" ]]; do
+	case "$1" in
+		-o|--oculusd)		OCULUSD="$2"; shift;;
+		-r|--norestart)		NORESTART=1;;
+		-k|--nokill)		NOKILL=1;;
+		-u|--utilsdir)		UTILSDIR="$2"; shift;;
+	esac
+	shift
+done
+
+if [ -z $OCULUSD ]; then
+    OCULUSD=/usr/bin/oculusd
 fi
 
-OCULUSD=$1
-if [ -d $OCULUSD ]; then
-    OCULUSD=$OCULUSD/oculusd
+if [ -z $UTILSDIR ]; then
+	UTILSDIR=/usr/share/oculus-wine-wrapper
 fi
 
 if [ ! -x $OCULUSD ]; then
@@ -43,14 +50,43 @@ if [ ! -x $OCULUSD ]; then
     exit 1
 fi
 
-shift
+if [ ! -d $UTILSDIR ]; then
+	echo "Cannot find utilities"
+	exit 1
+fi
 
-LD_PRELOAD=$mydir/no_xselectinput.so $OCULUSD & oculus_pid=$!
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 [options] /path/to/game.exe [arguments]"
+	echo "$0 options:"
+	echo "  -o, --oculusd       specify location of oculusd (default /usr/bin/oculusd)"
+	echo "  -u, --utilsdir      specify location of wrapper utilities (default /usr/share/oculus-wine-wrapper)"
+	echo "  -r, --norestart     don't re-execute oculusd after game exits"
+	echo "  -k, --nokill        don't kill running oculusd service"
+    exit 1
+fi
+
+if [ -z $NOKILL ]; then
+	old_oculus_pid=$(pidof oculusd)
+	kill -TERM $old_oculus_pid
+	# wait 3 seconds for it to quit
+	i=15
+	while [ ! -z $(pidof oculusd) -o $i -gt 0 ]; do
+		sleep 0.2
+		i=$(($i - 1))
+	done
+	if [ ! -z $(pidof oculusd) ]; then
+		echo "Unable to kill running $OCULUSD process"
+		exit 1
+	fi
+fi
+
+LD_PRELOAD=$UTILSDIR/no_xselectinput.so $OCULUSD & oculus_pid=$!
 sleep .5
 if ! kill -0 $oculus_pid 2>/dev/null; then
     echo "oculus service exited prematurely: is another instance already running?"
     exit 1
 fi
+
 while [ ! -e /dev/shm/OVR* ]; do
     if ! kill -0 $oculus_pid $ 2>/dev/null; then
         wait
@@ -59,7 +95,7 @@ while [ ! -e /dev/shm/OVR* ]; do
     fi
     sleep .1
 done
-$WINE $mydir/oculus_shm_adapter.exe & wine_pid=$!
+$WINE $UTILSDIR/oculus_shm_adapter.exe & wine_pid=$!
 sleep .1
 
 $WINE "$@"
@@ -69,3 +105,8 @@ echo
 kill $wine_pid
 kill $oculus_pid
 wait
+
+if [ -z $NORESTART ]; then
+	echo "Killing and re-forking $OCULUSD"
+	nohup $OCULUSD > /dev/null &
+fi
