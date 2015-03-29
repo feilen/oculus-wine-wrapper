@@ -29,7 +29,7 @@ IFS=
 
 while [[ ${1:0:1} = "-" ]]; do
 	case "$1" in
-		-o|--oculusd)		OCULUSD="$2"; shift;;
+		-o|--ovrd)		OVRD="$2"; shift;;
 		-r|--norestart)		NORESTART=1;;
 		-k|--nokill)		NOKILL=1;;
 		-u|--utilsdir)		UTILSDIR="$2"; shift;;
@@ -37,15 +37,15 @@ while [[ ${1:0:1} = "-" ]]; do
 	shift
 done
 
-if [ -z $OCULUSD ]; then
-    OCULUSD=/usr/bin/oculusd
+if [ -z $OVRD ]; then
+    OVRD=/usr/bin/ovrd
 fi
 
 if [ -z $UTILSDIR ]; then
 	UTILSDIR=/usr/share/oculus-wine-wrapper
 fi
 
-if [ ! -x $OCULUSD ]; then
+if [ ! -x $OVRD ]; then
     echo "Cannot run $OCULUSD"
     exit 1
 fi
@@ -70,17 +70,17 @@ if [ -z $NOKILL ]; then
 	kill -TERM $old_oculus_pid
 	# wait 3 seconds for it to quit
 	i=15
-	while [ ! -z $(pidof oculusd) -o $i -gt 0 ]; do
+	while [ ! -z $(pidof ovrd) -o $i -gt 0 ]; do
 		sleep 0.2
 		i=$(($i - 1))
 	done
-	if [ ! -z $(pidof oculusd) ]; then
-		echo "Unable to kill running $OCULUSD process"
+	if [ ! -z $(pidof ovrd) ]; then
+		echo "Unable to kill running $OVRD process"
 		exit 1
 	fi
 fi
 
-LD_PRELOAD=$UTILSDIR/no_xselectinput.so $OCULUSD & oculus_pid=$!
+LD_PRELOAD=$UTILSDIR/no_xselectinput.so $OVRD & oculus_pid=$!
 sleep .5
 if ! kill -0 $oculus_pid 2>/dev/null; then
     echo "oculus service exited prematurely: is another instance already running?"
@@ -90,7 +90,7 @@ fi
 while [ ! -e /dev/shm/OVR* ]; do
     if ! kill -0 $oculus_pid $ 2>/dev/null; then
         wait
-        echo "oculusd exited without creating SHM"
+        echo "ovrd exited without creating SHM"
         exit 1
     fi
     sleep .1
@@ -107,6 +107,6 @@ kill $oculus_pid
 wait
 
 if [ -z $NORESTART ]; then
-	echo "Killing and re-forking $OCULUSD"
-	nohup $OCULUSD > /dev/null &
+	echo "Killing and re-forking $OVRD"
+	nohup $OVRD > /dev/null &
 fi
