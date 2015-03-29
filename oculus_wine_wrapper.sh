@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Oculus Wine Wrapper
 #
@@ -29,7 +29,7 @@ IFS=
 
 while [[ ${1:0:1} = "-" ]]; do
 	case "$1" in
-		-o|--ovrd)		OVRD="$2"; shift;;
+		-o|--ovrd)			OVRD="$2"; shift;;
 		-r|--norestart)		NORESTART=1;;
 		-k|--nokill)		NOKILL=1;;
 		-u|--utilsdir)		UTILSDIR="$2"; shift;;
@@ -46,7 +46,7 @@ if [ -z $UTILSDIR ]; then
 fi
 
 if [ ! -x $OVRD ]; then
-    echo "Cannot run $OCULUSD"
+    echo "Cannot run $OVRD"
     exit 1
 fi
 
@@ -58,15 +58,15 @@ fi
 if [ $# -lt 1 ]; then
     echo "Usage: $0 [options] /path/to/game.exe [arguments]"
 	echo "$0 options:"
-	echo "  -o, --oculusd       specify location of oculusd (default /usr/bin/oculusd)"
+	echo "  -o, --ovrd       specify location of ovrd (default /usr/bin/ovrd)"
 	echo "  -u, --utilsdir      specify location of wrapper utilities (default /usr/share/oculus-wine-wrapper)"
-	echo "  -r, --norestart     don't re-execute oculusd after game exits"
-	echo "  -k, --nokill        don't kill running oculusd service"
+	echo "  -r, --norestart     don't re-execute ovrd after game exits"
+	echo "  -k, --nokill        don't kill running ovrd service"
     exit 1
 fi
 
 if [ -z $NOKILL ]; then
-	old_oculus_pid=$(pidof oculusd)
+	old_oculus_pid=$(pidof ovrd)
 	kill -TERM $old_oculus_pid
 	# wait 3 seconds for it to quit
 	i=15
